@@ -46,7 +46,7 @@ Learners connect devices and sensors to the cloud, control them remotely, and au
 │   └── assets/                                  # Diagrams + platform screenshots
 ├── LEARNER-GUIDE.md                             # Markdown mirror of the Learner Guide
 ├── labs/                                        # 6 hands-on labs (start at labs/README.md)
-└── build/                                       # Single-source generators (course_data.py drives everything)
+└── .claude/skills/courseware-build/             # Single-source generators (course_data.py drives everything)
 ```
 
 ## Hands-on labs
@@ -64,14 +64,13 @@ All labs run on [IoTFlow](https://iot.tertiaryinfotech.com) and mirror the offic
 
 ## Rebuilding the courseware
 
-Everything is generated from a single source of truth (`build/course_data.py` + `build/data_labs.py`), so the PPT, LP, LG and labs can never drift apart:
+Everything is generated from a single source of truth (`course_data.py` + `data_labs.py` in the `courseware-build` skill), so the PPT, LP, LG and labs can never drift apart:
 
 ```bash
-cd build
-python3 build_labs.py           # labs/*.md + labs/README.md
-python3 build_slides.py         # courseware/IoT-Fundamental-for-Beginners-v13.pptx
-python3 build_lesson_plan.py    # courseware/LP-*.docx
-python3 build_learner_guide.py  # courseware/LG-*.docx + LEARNER-GUIDE.md
+python3 .claude/skills/courseware-build/build_labs.py           # labs/*.md + labs/README.md
+python3 .claude/skills/courseware-build/build_slides.py         # courseware/IoT-Fundamental-for-Beginners-v13.pptx
+python3 .claude/skills/courseware-build/build_lesson_plan.py    # courseware/LP-*.docx
+python3 .claude/skills/courseware-build/build_learner_guide.py  # courseware/LG-*.docx + LEARNER-GUIDE.md
 ```
 
 Requires `python-pptx`, `python-docx` and `Pillow`.

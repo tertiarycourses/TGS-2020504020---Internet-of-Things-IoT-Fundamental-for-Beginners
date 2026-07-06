@@ -6,10 +6,13 @@
 /references/
 
 # Intermediate extraction output (curated copies live in courseware/assets/)
-/assets/
+/.claude/skills/courseware-build/reference-images/
 
 # OS / tooling
 .DS_Store
 __pycache__/
 *.pyc
 .playwright-mcp/
+
+# Assessment builder embeds this course's questions + model answers (confidential — never pushed)
+/.claude/skills/wsq-assessment/build_assessment.py
