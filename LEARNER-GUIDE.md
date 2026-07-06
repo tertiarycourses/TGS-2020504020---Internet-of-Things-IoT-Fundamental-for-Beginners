@@ -1,6 +1,6 @@
 # Internet of Things (IoT) Fundamental for Beginners — Learner Guide
 
-**WSQ Course Code:** TGS-2020504020  |  **Conducted by:** Tertiary Infotech Academy Pte Ltd (UEN 201200696W)  |  **Version v13 · 6 July 2026**
+**WSQ Course Code:** TGS-2020504020  |  **Conducted by:** Tertiary Infotech Academy Pte Ltd (UEN 201200696W)  |  **Version v14 · 6 July 2026**
 
 **IoT platform:** https://iot.tertiaryinfotech.com  |  **Course page:** https://www.tertiarycourses.com.sg/wsq-internet-of-things-iot-fundamental-for-beginners.html
 
@@ -90,11 +90,92 @@ This course is mapped to the Skills Framework TSC Internet of Things Application
 - Visualise & Control — compose a dashboard of charts, gauges, buttons & sliders, on web and mobile.
 - Automate with n8n — device events fire n8n flows that notify, control devices back, log data or call AI.
 
+**Install the IoTFlow Python client (pip install iotflow)**
+
+The official Python client connects any device that runs Python (Raspberry Pi, PC, Mac, Linux SBCs) to the platform. For microcontrollers (Arduino, ESP8266, ESP32) use the Arduino library — both speak the same protocol. Install it once before Lab 2:
+
+1. Open a terminal (macOS/Linux: Terminal; Windows: Command Prompt or PowerShell) and check that Python 3 is installed.
+
+   ```
+   python --version    # or: python3 --version
+   ```
+
+2. Install the client with MQTT support (recommended for this course).
+
+   ```
+   pip install "iotflow[mqtt]"
+   ```
+
+3. Alternative — HTTP-only install (zero dependencies) if pip cannot reach paho-mqtt.
+
+   ```
+   pip install iotflow
+   ```
+
+4. Verify the installation — the import must succeed silently.
+
+   ```
+   python -c "from iotflow import IoTFlow; print('iotflow OK')"
+   ```
+
+
+Package on PyPI: https://pypi.org/project/iotflow/  ·  Source, README and examples: https://github.com/alfredang/iotplatform/tree/main/clients/python
+
+**The telemetry_upload.py example script (used in Lab 2)**
+
+This is the Python equivalent of the ESP8266_Telemetry_Upload Arduino sketch — it connects to the MQTT broker and publishes a reading every 10 seconds. Download it, fill in your broker host, device id and device token from the Add Device wizard, then run it:
+
+```
+curl -O https://raw.githubusercontent.com/alfredang/iotplatform/main/clients/python/examples/telemetry_upload.py
+python telemetry_upload.py
+```
+
+```
+import random
+import time
+
+from iotflow import IoTFlow
+
+# ---- MQTT broker ----
+# Use the course platform broker. (For a self-hosted broker on your LAN,
+# use that machine's IP instead — find it with `ipconfig` / `ifconfig`.)
+MQTT_BROKER = "iot.tertiaryinfotech.com"
+MQTT_PORT = 1883
+
+# ---- Device identity (from the "Add Device" wizard in IoTFlow) ----
+DEVICE_ID = "test-device"
+DEVICE_TOKEN = "dev_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+PUBLISH_INTERVAL_S = 10
+
+iot = IoTFlow(
+    token=DEVICE_TOKEN,
+    device_id=DEVICE_ID,
+    mqtt_host=MQTT_BROKER,
+    mqtt_port=MQTT_PORT,
+)
+iot.connect()  # MQTT connection runs in the background
+print(f"Connected to MQTT broker {MQTT_BROKER}:{MQTT_PORT}")
+
+while True:
+    # TODO: replace with real sensor readings (DHT22, BME280, ADC, ...)
+    temperature = round(28.5 + random.uniform(-1.0, 1.0), 1)
+    humidity = round(65 + random.uniform(-5.0, 5.0), 1)
+    voltage = 3.7
+
+    iot.mqtt_publish(temperature=temperature, humidity=humidity, voltage=voltage)
+    print(f"Published: temperature={temperature} humidity={humidity} voltage={voltage}")
+    time.sleep(PUBLISH_INTERVAL_S)
+```
+
+> **Note:** Example script on GitHub: https://github.com/alfredang/iotplatform/blob/main/clients/python/examples/telemetry_upload.py — the Arduino original it mirrors: https://github.com/alfredang/iotplatform/blob/main/clients/arduino/IoTFlow/examples/ESP8266_Telemetry_Upload/ESP8266_Telemetry_Upload.ino
+
 **Conventions used in every lab**
 
 - Your device token (dev_...) is shown ONCE at registration — store it safely and never share it.
 - Every API call authenticates with the header:  Authorization: Bearer dev_XXXXXXXXXXXX
 - MQTT broker: iot.tertiaryinfotech.com, port 1883.  REST endpoint: /api/telemetry.
+- Python code uses the official client: pip install "iotflow[mqtt]" — send()/virtual_write() over HTTP, connect()/mqtt_publish() over MQTT, @on_command for control.
 - Each lab mirrors a platform tutorial at https://iot.tertiaryinfotech.com/tutorials — revisit them any time.
 
 
@@ -122,6 +203,8 @@ Cloud & IoT Platforms · IoTFlow · Device Registration · MQTT & HTTP Telemetry
 - IoTFlow (iot.tertiaryinfotech.com) is our low-code IoT platform: connect ESP32/Arduino/Pi over MQTT or HTTP, visualise, control and automate.
 - Every device authenticates with a device token (Authorization: Bearer dev_...) issued once at registration.
 - Telemetry is a simple JSON document of metric key-value pairs, e.g. {"temperature": 22.5, "humidity": 60}.
+- Official device clients: the Python client — pip install iotflow — for Raspberry Pi/PC/Mac, and the Arduino library for ESP8266/ESP32; both speak the same protocol.
+- The Python client sends with send()/virtual_write() over HTTP, streams with connect()/mqtt_publish() over MQTT, and reacts to commands with @on_command.
 
 
 ### Lab 1 — Register Your First Device on IoTFlow
@@ -184,7 +267,7 @@ Goal: The learner pushes sensor values to the IoTFlow telemetry API three ways �
 
 **What you'll build**
 
-Live temperature & humidity telemetry streaming into IoTFlow from terminal, Python and ESP32   (Uses: Telemetry REST API, Python iotflow client, ESP32/ESP8266 Arduino library, MQTT broker (port 1883).)
+Live temperature & humidity telemetry streaming into IoTFlow from terminal, Python and ESP32   (Uses: Telemetry REST API, Python client (pip install iotflow), ESP32/ESP8266 Arduino library, MQTT broker (port 1883).)
 
 ![Platform walkthrough for Lab 2 — Send Sensor Readings to the Cloud (HTTP & MQTT)](courseware/assets/lab-02-send-reading.png)
 
@@ -203,20 +286,48 @@ Live temperature & humidity telemetry streaming into IoTFlow from terminal, Pyth
    ```
 
 3. Open the Dashboard — the reading appears under Latest Telemetry within seconds (widgets auto-refresh every 5 s).
-4. Send readings from Python using the lightweight iotflow.py client (plain HTTP — no pip install needed).
+4. Install the official IoTFlow Python client from PyPI (https://pypi.org/project/iotflow/).
 
    ```
-   client = IoTFlow(host, device_token, device_id)
-   client.send(temperature=23.1, humidity=58)
+   pip install "iotflow[mqtt]"      # with real-time MQTT (paho-mqtt)
+   pip install iotflow               # HTTP only — zero dependencies
    ```
 
-5. For real hardware: flash the ESP32/ESP8266 Arduino sketch — set your Wi-Fi SSID/password, the broker host (port 1883) and your device credentials.
+5. Send readings from Python over HTTP — several metrics at once with send(), or one at a time with virtual_write().
+
+   ```
+   from iotflow import IoTFlow
+   
+   iot = IoTFlow("https://iot.tertiaryinfotech.com", "dev_XXXXXXXXXXXX", "living-room-sensor")
+   iot.send(temperature=22.5, humidity=60)      # several metrics at once
+   iot.virtual_write("temperature", 22.5)       # or one at a time
+   ```
+
+6. Stream continuously over MQTT with the telemetry_upload.py example — download it, fill in your broker host, device id and device token, then run it.
+
+   ```
+   curl -O https://raw.githubusercontent.com/alfredang/iotplatform/main/clients/python/examples/telemetry_upload.py
+   # edit: MQTT_BROKER = "iot.tertiaryinfotech.com", DEVICE_ID, DEVICE_TOKEN
+   python telemetry_upload.py
+   ```
+
+7. Study the loop inside telemetry_upload.py — connect() runs MQTT in the background and mqtt_publish() sends a reading every 10 seconds.
+
+   ```
+   iot = IoTFlow(token=DEVICE_TOKEN, device_id=DEVICE_ID,
+                 mqtt_host=MQTT_BROKER, mqtt_port=MQTT_PORT)
+   iot.connect()                    # MQTT runs in the background
+   while True:
+       iot.mqtt_publish(temperature=temperature, humidity=humidity, voltage=3.7)
+       time.sleep(PUBLISH_INTERVAL_S)
+   ```
+
+8. Hardware alternative: flash the ESP8266_Telemetry_Upload Arduino sketch — the Arduino library speaks the same protocol as the Python client. Confirm the values update live on the dashboard.
 
    ```
    IoTFlow.virtualWrite("temperature", t);   // metric name binds to dashboard widgets
    ```
 
-6. Let the device publish continuously and confirm the values update live on the dashboard.
 
 **Test it**
 
@@ -298,7 +409,7 @@ Goal: The learner adds Control widgets (button, switch, slider, terminal) bound 
 
 **What you'll build**
 
-A dashboard switch and slider that control a relay/LED on the device in real time   (Uses: Control widgets (Button, Switch, Slider, Terminal), virtual pins, MQTT downlink, HTTP polling.)
+A dashboard switch and slider that control a relay/LED on the device in real time   (Uses: Control widgets (Button, Switch, Slider, Terminal), virtual pins, Python client @on_command, MQTT downlink, HTTP polling.)
 
 ![Platform walkthrough for Lab 4 — Remote Control a Device with Dashboard Virtual Pins](courseware/assets/lab-04-control-device.png)
 
@@ -319,7 +430,34 @@ A dashboard switch and slider that control a relay/LED on the device in real tim
    MQTT topic:  devices/<id>/down      HTTP:  GET /api/device/state
    ```
 
-4. Implement the command handler in your device sketch and map pins to GPIO outputs.
+4. React to commands in Python with the iotflow client — decorate a handler with @iot.on_command and poll over HTTP (no extra dependencies).
+
+   ```
+   from iotflow import IoTFlow
+   
+   iot = IoTFlow("https://iot.tertiaryinfotech.com", "dev_XXXXXXXXXXXX", "living-room-sensor")
+   
+   @iot.on_command
+   def handle(pin, value, text):
+       if pin == "V1":
+           print("relay ->", value)      # drive a GPIO here
+   
+   iot.run(interval=3)                   # blocks, polls every 3 s
+   ```
+
+5. For real-time control, use the same handler over MQTT — loop_forever() keeps the connection open so commands arrive instantly.
+
+   ```
+   iot = IoTFlow(token="dev_XXXXXXXXXXXX", device_id="living-room-sensor",
+                 mqtt_host="iot.tertiaryinfotech.com", mqtt_port=1883)
+   
+   @iot.on_command
+   def handle(pin, value, text): ...
+   
+   iot.loop_forever()
+   ```
+
+6. Hardware alternative: implement the same handler in the Arduino sketch and map pins to GPIO outputs.
 
    ```
    void onCommand(const String& pin, float value, const String& text) {
@@ -327,12 +465,11 @@ A dashboard switch and slider that control a relay/LED on the device in real tim
    }
    ```
 
-5. Flip the switch and move the slider on the dashboard — commands are delivered to the device immediately.
-6. Observe the relay/LED respond, and note that the same events can also trigger automations (Lab 6).
+7. Flip the switch and move the slider on the dashboard — commands are delivered to the device immediately; the relay/LED responds. The same events can also trigger automations (Lab 6).
 
 **Test it**
 
-Toggling the dashboard switch changes the relay/LED state within a second, and the slider value arrives in the onCommand handler as you drag it.
+Toggling the dashboard switch changes the relay/LED state within a second, and the slider value arrives in your @on_command handler as you drag it.
 
 > **Note:** This lab mirrors the platform tutorial at https://iot.tertiaryinfotech.com/tutorials/control-a-device — the full lab sheet is labs/lab-04-remote-control-a-device-with-dashboard-virtual-pins.md in the course repository.
 

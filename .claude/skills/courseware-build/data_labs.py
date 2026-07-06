@@ -45,7 +45,7 @@ LABS = [
               "any terminal, the Python client, and an ESP32/ESP8266 over MQTT — and watches the "
               "readings appear live on the dashboard."),
         build="Live temperature & humidity telemetry streaming into IoTFlow from terminal, Python and ESP32",
-        services="Telemetry REST API, Python iotflow client, ESP32/ESP8266 Arduino library, MQTT broker (port 1883)",
+        services="Telemetry REST API, Python client (pip install iotflow), ESP32/ESP8266 Arduino library, MQTT broker (port 1883)",
         steps=[
             ("Open the Integrate page for your device — every snippet comes pre-filled with your endpoint and device token.",
              ""),
@@ -53,12 +53,16 @@ LABS = [
              'curl -X POST https://iot.tertiaryinfotech.com/api/telemetry \\\n  -H "Authorization: Bearer dev_XXXXXXXXXXXX" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"temperature": 22.5, "humidity": 60}\''),
             ("Open the Dashboard — the reading appears under Latest Telemetry within seconds (widgets auto-refresh every 5 s).",
              ""),
-            ("Send readings from Python using the lightweight iotflow.py client (plain HTTP — no pip install needed).",
-             'client = IoTFlow(host, device_token, device_id)\nclient.send(temperature=23.1, humidity=58)'),
-            ("For real hardware: flash the ESP32/ESP8266 Arduino sketch — set your Wi-Fi SSID/password, the broker host (port 1883) and your device credentials.",
+            ("Install the official IoTFlow Python client from PyPI (https://pypi.org/project/iotflow/).",
+             'pip install "iotflow[mqtt]"      # with real-time MQTT (paho-mqtt)\npip install iotflow               # HTTP only — zero dependencies'),
+            ("Send readings from Python over HTTP — several metrics at once with send(), or one at a time with virtual_write().",
+             'from iotflow import IoTFlow\n\niot = IoTFlow("https://iot.tertiaryinfotech.com", "dev_XXXXXXXXXXXX", "living-room-sensor")\niot.send(temperature=22.5, humidity=60)      # several metrics at once\niot.virtual_write("temperature", 22.5)       # or one at a time'),
+            ("Stream continuously over MQTT with the telemetry_upload.py example — download it, fill in your broker host, device id and device token, then run it.",
+             'curl -O https://raw.githubusercontent.com/alfredang/iotplatform/main/clients/python/examples/telemetry_upload.py\n# edit: MQTT_BROKER = "iot.tertiaryinfotech.com", DEVICE_ID, DEVICE_TOKEN\npython telemetry_upload.py'),
+            ("Study the loop inside telemetry_upload.py — connect() runs MQTT in the background and mqtt_publish() sends a reading every 10 seconds.",
+             'iot = IoTFlow(token=DEVICE_TOKEN, device_id=DEVICE_ID,\n              mqtt_host=MQTT_BROKER, mqtt_port=MQTT_PORT)\niot.connect()                    # MQTT runs in the background\nwhile True:\n    iot.mqtt_publish(temperature=temperature, humidity=humidity, voltage=3.7)\n    time.sleep(PUBLISH_INTERVAL_S)'),
+            ("Hardware alternative: flash the ESP8266_Telemetry_Upload Arduino sketch — the Arduino library speaks the same protocol as the Python client. Confirm the values update live on the dashboard.",
              'IoTFlow.virtualWrite("temperature", t);   // metric name binds to dashboard widgets'),
-            ("Let the device publish continuously and confirm the values update live on the dashboard.",
-             ""),
         ],
         test=("Each value you send appears in the Dashboard's Latest Telemetry within seconds, "
               "and the device's telemetry history grows with every reading."),
@@ -100,7 +104,7 @@ LABS = [
               "pins, implements the device-side command handler, and flips a relay/LED live from the "
               "dashboard — Blynk-style two-way control."),
         build="A dashboard switch and slider that control a relay/LED on the device in real time",
-        services="Control widgets (Button, Switch, Slider, Terminal), virtual pins, MQTT downlink, HTTP polling",
+        services="Control widgets (Button, Switch, Slider, Terminal), virtual pins, Python client @on_command, MQTT downlink, HTTP polling",
         steps=[
             ("On the Dashboard click Add widget and choose a Control type: Button (momentary), Switch (toggle), Slider (value) or Terminal (text).",
              ""),
@@ -108,15 +112,17 @@ LABS = [
              'Virtual pin:  V1'),
             ("Understand the downlink path — devices receive commands via MQTT on their command topic, or by HTTP polling.",
              'MQTT topic:  devices/<id>/down      HTTP:  GET /api/device/state'),
-            ("Implement the command handler in your device sketch and map pins to GPIO outputs.",
+            ("React to commands in Python with the iotflow client — decorate a handler with @iot.on_command and poll over HTTP (no extra dependencies).",
+             'from iotflow import IoTFlow\n\niot = IoTFlow("https://iot.tertiaryinfotech.com", "dev_XXXXXXXXXXXX", "living-room-sensor")\n\n@iot.on_command\ndef handle(pin, value, text):\n    if pin == "V1":\n        print("relay ->", value)      # drive a GPIO here\n\niot.run(interval=3)                   # blocks, polls every 3 s'),
+            ("For real-time control, use the same handler over MQTT — loop_forever() keeps the connection open so commands arrive instantly.",
+             'iot = IoTFlow(token="dev_XXXXXXXXXXXX", device_id="living-room-sensor",\n              mqtt_host="iot.tertiaryinfotech.com", mqtt_port=1883)\n\n@iot.on_command\ndef handle(pin, value, text): ...\n\niot.loop_forever()'),
+            ("Hardware alternative: implement the same handler in the Arduino sketch and map pins to GPIO outputs.",
              'void onCommand(const String& pin, float value, const String& text) {\n  if (pin == "V1") digitalWrite(RELAY_PIN, value > 0 ? HIGH : LOW);\n}'),
-            ("Flip the switch and move the slider on the dashboard — commands are delivered to the device immediately.",
-             ""),
-            ("Observe the relay/LED respond, and note that the same events can also trigger automations (Lab 6).",
+            ("Flip the switch and move the slider on the dashboard — commands are delivered to the device immediately; the relay/LED responds. The same events can also trigger automations (Lab 6).",
              ""),
         ],
         test=("Toggling the dashboard switch changes the relay/LED state within a second, and the "
-              "slider value arrives in the onCommand handler as you drag it."),
+              "slider value arrives in your @on_command handler as you drag it."),
     ),
     # ---------------------------------------------------------------- Topic 4
     dict(

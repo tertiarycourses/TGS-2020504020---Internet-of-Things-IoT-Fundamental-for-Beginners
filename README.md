@@ -37,8 +37,8 @@ Learners connect devices and sensors to the cloud, control them remotely, and au
 
 ```
 ├── courseware/
-│   ├── IoT-Fundamental-for-Beginners-v13.pptx   # Slide deck (146 slides)
-│   ├── IoT-Fundamental-for-Beginners-v13.pdf    # Slide deck (PDF)
+│   ├── IoT-Fundamental-for-Beginners-v14.pptx   # Slide deck (151 slides)
+│   ├── IoT-Fundamental-for-Beginners-v14.pdf    # Slide deck (PDF)
 │   ├── LP-IoT-Fundamental-for-Beginners.docx    # Lesson Plan (2-day schedule)
 │   ├── LP-IoT-Fundamental-for-Beginners.pdf     # Lesson Plan (PDF)
 │   ├── LG-IoT-Fundamental-for-Beginners.docx    # Learner Guide (with screenshots)
@@ -52,6 +52,8 @@ Learners connect devices and sensors to the cloud, control them remotely, and au
 ## Hands-on labs
 
 All labs run on [IoTFlow](https://iot.tertiaryinfotech.com) and mirror the official [platform tutorials](https://iot.tertiaryinfotech.com/tutorials). No hardware required — every lab works with cURL/Python from any terminal; an ESP32/ESP8266 makes it real.
+
+The Python code uses the **official IoTFlow client** — `pip install "iotflow[mqtt]"` ([PyPI](https://pypi.org/project/iotflow/) · [source, README & examples](https://github.com/alfredang/iotplatform/tree/main/clients/python)). The [telemetry_upload.py](https://github.com/alfredang/iotplatform/blob/main/clients/python/examples/telemetry_upload.py) example is the Python equivalent of the [ESP8266 Arduino sketch](https://github.com/alfredang/iotplatform/blob/main/clients/arduino/IoTFlow/examples/ESP8266_Telemetry_Upload/ESP8266_Telemetry_Upload.ino) — both speak the same protocol.
 
 | # | Lab | Topic |
 |---|-----|-------|
@@ -68,7 +70,7 @@ Everything is generated from a single source of truth (`course_data.py` + `data_
 
 ```bash
 python3 .claude/skills/courseware-build/build_labs.py           # labs/*.md + labs/README.md
-python3 .claude/skills/courseware-build/build_slides.py         # courseware/IoT-Fundamental-for-Beginners-v13.pptx
+python3 .claude/skills/courseware-build/build_slides.py         # courseware/IoT-Fundamental-for-Beginners-v14.pptx
 python3 .claude/skills/courseware-build/build_lesson_plan.py    # courseware/LP-*.docx
 python3 .claude/skills/courseware-build/build_learner_guide.py  # courseware/LG-*.docx + LEARNER-GUIDE.md
 ```

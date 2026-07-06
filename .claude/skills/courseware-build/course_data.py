@@ -15,7 +15,7 @@ TITLE        = "Internet of Things (IoT) Fundamental for Beginners"
 SHORT_TITLE  = "IoT Fundamental for Beginners"
 FILE_STEM    = "IoT-Fundamental-for-Beginners"
 COURSE_CODE  = "TGS-2020504020"
-VERSION      = "v13"
+VERSION      = "v14"
 VERSION_DATE = "6 July 2026"
 ORG          = "Tertiary Infotech Academy Pte Ltd"
 UEN          = "UEN: 201200696W"
@@ -26,6 +26,14 @@ COURSE_URL   = "https://www.tertiarycourses.com.sg/wsq-internet-of-things-iot-fu
 PLATFORM     = "IoTFlow"
 PLATFORM_URL = "https://iot.tertiaryinfotech.com"
 TUTORIALS_URL = "https://iot.tertiaryinfotech.com/tutorials"
+
+# Official device clients (Python package + the Arduino example it mirrors)
+PYPI_URL       = "https://pypi.org/project/iotflow/"
+PY_CLIENT_URL  = "https://github.com/alfredang/iotplatform/tree/main/clients/python"
+PY_EXAMPLE_URL = "https://github.com/alfredang/iotplatform/blob/main/clients/python/examples/telemetry_upload.py"
+PY_EXAMPLE_RAW = "https://raw.githubusercontent.com/alfredang/iotplatform/main/clients/python/examples/telemetry_upload.py"
+ARDUINO_EXAMPLE_URL = ("https://github.com/alfredang/iotplatform/blob/main/clients/arduino/IoTFlow/"
+                       "examples/ESP8266_Telemetry_Upload/ESP8266_Telemetry_Upload.ino")
 
 # ------------------------------------------------------------------ skills framework
 TSC_TITLE = "Internet of Things Application"
@@ -84,6 +92,8 @@ TOPICS = [
             "IoTFlow (iot.tertiaryinfotech.com) is our low-code IoT platform: connect ESP32/Arduino/Pi over MQTT or HTTP, visualise, control and automate.",
             "Every device authenticates with a device token (Authorization: Bearer dev_...) issued once at registration.",
             "Telemetry is a simple JSON document of metric key-value pairs, e.g. {\"temperature\": 22.5, \"humidity\": 60}.",
+            "Official device clients: the Python client — pip install iotflow — for Raspberry Pi/PC/Mac, and the Arduino library for ESP8266/ESP32; both speak the same protocol.",
+            "The Python client sends with send()/virtual_write() over HTTP, streams with connect()/mqtt_publish() over MQTT, and reacts to commands with @on_command.",
          ]),
     dict(num=3, code="03",
          title="Read Data and Remote Control from Cloud",

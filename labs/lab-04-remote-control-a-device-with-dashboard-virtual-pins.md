@@ -13,7 +13,7 @@ The learner adds Control widgets (button, switch, slider, terminal) bound to vir
 
 A dashboard switch and slider that control a relay/LED on the device in real time
 
-*Uses: Control widgets (Button, Switch, Slider, Terminal), virtual pins, MQTT downlink, HTTP polling.*
+*Uses: Control widgets (Button, Switch, Slider, Terminal), virtual pins, Python client @on_command, MQTT downlink, HTTP polling.*
 
 ![Platform walkthrough](../courseware/assets/lab-04-control-device.png)
 
@@ -23,6 +23,7 @@ A dashboard switch and slider that control a relay/LED on the device in real tim
 - A modern browser. Hardware (ESP32/ESP8266/Raspberry Pi) is optional — every lab can be completed with cURL/Python from any terminal.
 
 - Your device token from Lab 1 (`dev_...`).
+- Python 3 with the official client installed: `pip install "iotflow[mqtt]"` ([PyPI](https://pypi.org/project/iotflow/) · [source & examples](https://github.com/alfredang/iotplatform/tree/main/clients/python)).
 
 ## Step-by-step
 
@@ -40,7 +41,34 @@ Virtual pin:  V1
 MQTT topic:  devices/<id>/down      HTTP:  GET /api/device/state
 ```
 
-### Step 4 — Implement the command handler in your device sketch and map pins to GPIO outputs.
+### Step 4 — React to commands in Python with the iotflow client — decorate a handler with @iot.on_command and poll over HTTP (no extra dependencies).
+
+```
+from iotflow import IoTFlow
+
+iot = IoTFlow("https://iot.tertiaryinfotech.com", "dev_XXXXXXXXXXXX", "living-room-sensor")
+
+@iot.on_command
+def handle(pin, value, text):
+    if pin == "V1":
+        print("relay ->", value)      # drive a GPIO here
+
+iot.run(interval=3)                   # blocks, polls every 3 s
+```
+
+### Step 5 — For real-time control, use the same handler over MQTT — loop_forever() keeps the connection open so commands arrive instantly.
+
+```
+iot = IoTFlow(token="dev_XXXXXXXXXXXX", device_id="living-room-sensor",
+              mqtt_host="iot.tertiaryinfotech.com", mqtt_port=1883)
+
+@iot.on_command
+def handle(pin, value, text): ...
+
+iot.loop_forever()
+```
+
+### Step 6 — Hardware alternative: implement the same handler in the Arduino sketch and map pins to GPIO outputs.
 
 ```
 void onCommand(const String& pin, float value, const String& text) {
@@ -48,13 +76,11 @@ void onCommand(const String& pin, float value, const String& text) {
 }
 ```
 
-### Step 5 — Flip the switch and move the slider on the dashboard — commands are delivered to the device immediately.
-
-### Step 6 — Observe the relay/LED respond, and note that the same events can also trigger automations (Lab 6).
+### Step 7 — Flip the switch and move the slider on the dashboard — commands are delivered to the device immediately; the relay/LED responds. The same events can also trigger automations (Lab 6).
 
 ## Test it
 
-Toggling the dashboard switch changes the relay/LED state within a second, and the slider value arrives in the onCommand handler as you drag it.
+Toggling the dashboard switch changes the relay/LED state within a second, and the slider value arrives in your @on_command handler as you drag it.
 
 ---
 *© 2026 Tertiary Infotech Academy Pte Ltd. All rights reserved. · www.tertiarycourses.com.sg*

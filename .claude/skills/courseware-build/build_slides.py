@@ -197,12 +197,18 @@ def step_slide(kicker,act_title,n,total,text,cmd=""):
     oval(s,Inches(0.85),Inches(2.5),Inches(1.4),Inches(1.4),TEAL)
     txt(s,Inches(0.85),Inches(2.74),Inches(1.4),Inches(0.9),[[(str(n),38,WHITE,True)]],align=PP_ALIGN.CENTER)
     txt(s,Inches(0.95),Inches(1.95),Inches(11),Inches(0.4),[[(f"STEP {n} OF {total}",13,GREY,True)]])
-    txt(s,Inches(2.55),Inches(2.4),Inches(10.1),Inches(1.6),[[(text,21,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
+    lines=cmd.split("\n") if cmd else []
+    long=len(lines)>4   # tall code block: tighten layout so it never hits the footer
+    txt(s,Inches(2.55),Inches(2.0) if long else Inches(2.4),Inches(10.1),
+        Inches(1.2) if long else Inches(1.6),
+        [[(text,18 if long else 21,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
     if cmd:
-        lines=cmd.split("\n"); ch=max(0.95, 0.34*len(lines)+0.42)
-        rect(s,Inches(2.55),Inches(4.35),Inches(10.1),Inches(ch),RGBColor(0x0B,0x12,0x20))
-        txt(s,Inches(2.8),Inches(4.5),Inches(9.7),Inches(ch-0.3),
-            [[(ln,12,RGBColor(0x9C,0xDC,0xFE),False)] for ln in lines],space=2)
+        lh=0.27 if long else 0.34
+        ch=max(0.95, lh*len(lines)+0.4)
+        y=min(4.35, 6.9-ch)
+        rect(s,Inches(2.55),Inches(y),Inches(10.1),Inches(ch),RGBColor(0x0B,0x12,0x20))
+        txt(s,Inches(2.8),Inches(y+0.14),Inches(9.7),Inches(ch-0.28),
+            [[(ln,11 if long else 12,RGBColor(0x9C,0xDC,0xFE),False)] for ln in lines],space=2)
     footer(s); return s
 def test_slide(act_title,text,kicker):
     s=head(slide(),act_title,kicker,TEAL)
@@ -459,10 +465,25 @@ tile_grid("MQTT in a Nutshell",[
  kicker="THE IOT PROTOCOL",cols=2,size=14)
 img_slide("How MQTT Works","how-mqtt-works.png",
           "Publishers → broker → subscribers, routed by topic.",kicker="MQTT")
+tile_grid("The IoTFlow Python Client — pip install iotflow",[
+ ("Install","pip install \"iotflow[mqtt]\" for real-time MQTT, or pip install iotflow for HTTP only (zero dependencies). For Raspberry Pi, PC, Mac and Linux SBCs."),
+ ("Report readings (HTTP)","iot = IoTFlow(host, token, device_id) then iot.send(temperature=22.5, humidity=60) — or one metric at a time with iot.virtual_write()."),
+ ("Stream readings (MQTT)","iot.connect() runs MQTT in the background; iot.mqtt_publish(...) in a loop — the telemetry_upload.py example publishes every 10 s."),
+ ("React to commands","Decorate a handler with @iot.on_command(pin, value, text); iot.run(interval=3) polls over HTTP, iot.loop_forever() listens over MQTT.")],
+ kicker="OFFICIAL PYTHON CLIENT",cols=2,size=13)
+content("Python Client — Downloads & References",[
+ "PyPI package:  pip install iotflow   ·   https://pypi.org/project/iotflow/",
+ "Package folder + README:  https://github.com/alfredang/iotplatform/tree/main/clients/python",
+ "Example script (the Arduino replacement):  clients/python/examples/telemetry_upload.py",
+ "Direct download:  curl -O https://raw.githubusercontent.com/alfredang/iotplatform/main/clients/python/examples/telemetry_upload.py",
+ "The Arduino example it mirrors:  clients/arduino/IoTFlow/examples/ESP8266_Telemetry_Upload",
+ "Run it:  pip install \"iotflow[mqtt]\", fill in your broker host + device id + token, then:  python telemetry_upload.py"],
+ kicker="GET THE CODE",size=15)
 labs_cards(T); emit_labs(T)
 content(f"Recap — {T['title']}",[
  "You registered a device on IoTFlow and secured its once-shown device token.",
- "You posted telemetry with cURL (HTTP), Python, and an ESP32 over MQTT.",
+ "You posted telemetry with cURL (HTTP) and the Python client — pip install iotflow — over HTTP and MQTT.",
+ "The telemetry_upload.py example is the Python equivalent of the ESP8266 Arduino sketch; both speak the same protocol.",
  "Telemetry is JSON metric key-value pairs; metric names bind to dashboard widgets.",
  "Readings appear in Latest Telemetry within seconds — auto-refresh every 5 s."],kicker="TOPIC RECAP",size=17)
 
@@ -480,13 +501,13 @@ tile_grid("Virtual Pins — Two-Way Control",[
  ("What they are","Named keys (V1, relay, pump) shared between dashboard widgets and device code — Blynk-style."),
  ("Control widgets","Button (momentary) · Switch (toggle) · Slider (value) · Terminal (text)."),
  ("Downlink path","Widget writes a pin → platform sends the command → device receives on devices/<id>/down (MQTT) or polls /api/device/state (HTTP)."),
- ("Device handler","onCommand(pin, value, text) maps the pin to a GPIO — relay, motor or LED responds instantly.")],
+ ("Device handler","A handler maps the pin to a GPIO — Python @iot.on_command(pin, value, text) or Arduino onCommand(); the relay, motor or LED responds instantly.")],
  kicker="REMOTE CONTROL",cols=2,size=14)
 flow_h("Remote Control — the Downlink Path",[
  "User taps a Switch / moves a Slider on the dashboard",
  "The widget writes its virtual pin (e.g. V1 = 1)",
  "Platform delivers the command — MQTT downlink or HTTP poll",
- "Device onCommand() handler maps the pin to GPIO",
+ "Device handler (@on_command / onCommand) maps the pin to GPIO",
  "Relay / motor / LED responds — and events can fire automations"],kicker="END-TO-END",color=TEAL)
 content("Alerts and Trigger Rules",[
  "Alert rules watch your telemetry: fire on a threshold (temperature > 30) or when a device goes offline.",
@@ -496,7 +517,7 @@ content("Alerts and Trigger Rules",[
 labs_cards(T); emit_labs(T)
 content(f"Recap — {T['title']}",[
  "You read device state over REST and streamed live messages with an MQTT subscription.",
- "You bound Control widgets to virtual pins and handled commands with onCommand().",
+ "You bound Control widgets to virtual pins and handled commands with the Python client's @on_command (and Arduino onCommand).",
  "You flipped a relay/LED live from the dashboard — Blynk-style two-way control.",
  "Alert rules on thresholds or device-offline turn readings into triggers."],kicker="TOPIC RECAP",size=17)
 

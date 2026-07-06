@@ -81,11 +81,72 @@ bullets([
 ])
 h3("How the platform works")
 bullets([st for st in C.HOW_IT_WORKS])
+
+h3("Install the IoTFlow Python client (pip install iotflow)")
+p("The official Python client connects any device that runs Python (Raspberry Pi, PC, Mac, Linux "
+  "SBCs) to the platform. For microcontrollers (Arduino, ESP8266, ESP32) use the Arduino library — "
+  "both speak the same protocol. Install it once before Lab 2:")
+steps([
+ ("Open a terminal (macOS/Linux: Terminal; Windows: Command Prompt or PowerShell) and check that Python 3 is installed.",
+  "python --version    # or: python3 --version"),
+ ("Install the client with MQTT support (recommended for this course).",
+  'pip install "iotflow[mqtt]"'),
+ ("Alternative — HTTP-only install (zero dependencies) if pip cannot reach paho-mqtt.",
+  "pip install iotflow"),
+ ("Verify the installation — the import must succeed silently.",
+  'python -c "from iotflow import IoTFlow; print(\'iotflow OK\')"'),
+])
+p(f"Package on PyPI: {C.PYPI_URL}  ·  Source, README and examples: {C.PY_CLIENT_URL}")
+
+h3("The telemetry_upload.py example script (used in Lab 2)")
+p("This is the Python equivalent of the ESP8266_Telemetry_Upload Arduino sketch — it connects to "
+  "the MQTT broker and publishes a reading every 10 seconds. Download it, fill in your broker "
+  "host, device id and device token from the Add Device wizard, then run it:")
+code(f"curl -O {C.PY_EXAMPLE_RAW}\npython telemetry_upload.py")
+code('''import random
+import time
+
+from iotflow import IoTFlow
+
+# ---- MQTT broker ----
+# Use the course platform broker. (For a self-hosted broker on your LAN,
+# use that machine's IP instead — find it with `ipconfig` / `ifconfig`.)
+MQTT_BROKER = "iot.tertiaryinfotech.com"
+MQTT_PORT = 1883
+
+# ---- Device identity (from the "Add Device" wizard in IoTFlow) ----
+DEVICE_ID = "test-device"
+DEVICE_TOKEN = "dev_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+PUBLISH_INTERVAL_S = 10
+
+iot = IoTFlow(
+    token=DEVICE_TOKEN,
+    device_id=DEVICE_ID,
+    mqtt_host=MQTT_BROKER,
+    mqtt_port=MQTT_PORT,
+)
+iot.connect()  # MQTT connection runs in the background
+print(f"Connected to MQTT broker {MQTT_BROKER}:{MQTT_PORT}")
+
+while True:
+    # TODO: replace with real sensor readings (DHT22, BME280, ADC, ...)
+    temperature = round(28.5 + random.uniform(-1.0, 1.0), 1)
+    humidity = round(65 + random.uniform(-5.0, 5.0), 1)
+    voltage = 3.7
+
+    iot.mqtt_publish(temperature=temperature, humidity=humidity, voltage=voltage)
+    print(f"Published: temperature={temperature} humidity={humidity} voltage={voltage}")
+    time.sleep(PUBLISH_INTERVAL_S)''')
+note(f"Example script on GitHub: {C.PY_EXAMPLE_URL} — the Arduino original it mirrors: "
+     f"{C.ARDUINO_EXAMPLE_URL}")
+
 h3("Conventions used in every lab")
 bullets([
  "Your device token (dev_...) is shown ONCE at registration — store it safely and never share it.",
  "Every API call authenticates with the header:  Authorization: Bearer dev_XXXXXXXXXXXX",
  "MQTT broker: iot.tertiaryinfotech.com, port 1883.  REST endpoint: /api/telemetry.",
+ "Python code uses the official client: pip install \"iotflow[mqtt]\" — send()/virtual_write() over HTTP, connect()/mqtt_publish() over MQTT, @on_command for control.",
  f"Each lab mirrors a platform tutorial at {C.TUTORIALS_URL} — revisit them any time.",
 ])
 
@@ -195,9 +256,13 @@ prodoc.add_cover_page(doc,"LEARNER GUIDE",C.TITLE,C.VERSION.lstrip("v"),
                       course_logo=None, course_code=C.COURSE_CODE)
 prodoc.add_version_control(doc,[
     ("12","1 March 2025","Previous release — ThingSpeak/ESP8266/Node-RED based courseware.",C.TRAINER),
-    (C.VERSION.lstrip("v"),C.VERSION_DATE,
+    ("13","6 July 2026",
      "Revamped to the IoTFlow platform (iot.tertiaryinfotech.com): 6 labs covering device registration, "
      "MQTT/HTTP telemetry, virtual-pin remote control, dashboards and n8n + AI automation.",C.TRAINER),
+    (C.VERSION.lstrip("v"),C.VERSION_DATE,
+     "Labs updated to the official IoTFlow Python client (pip install iotflow): send()/virtual_write() "
+     "over HTTP, the telemetry_upload.py MQTT example, and @on_command control handlers; added the "
+     "Python client setup section with the full example script.",C.TRAINER),
 ])
 prodoc.add_toc(doc)
 
@@ -216,7 +281,13 @@ for kind,*rest in B:
         for x in rest[0]: doc.add_paragraph(x,style="List Bullet")
     elif kind=="steps":
         for i,(instr,cmd) in enumerate(rest[0],1):
-            para=doc.add_paragraph(style="List Number"); para.add_run(instr)
+            # explicit numbering so every lab's steps restart at 1 (List Number
+            # style shares one numId and would run 1..44 across the document)
+            para=doc.add_paragraph()
+            para.paragraph_format.left_indent=DocxInches(0.32)
+            para.paragraph_format.first_line_indent=DocxInches(-0.32)
+            r=para.add_run(f"{i}."); r.bold=True
+            para.add_run("  "+instr)
             if cmd: code_para(cmd)
     elif kind=="code": code_para(rest[0])
     elif kind=="note":

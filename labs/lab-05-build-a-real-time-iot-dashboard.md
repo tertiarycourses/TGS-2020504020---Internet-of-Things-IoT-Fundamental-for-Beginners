@@ -23,6 +23,7 @@ A monitoring dashboard with a number card, gauge, chart, LED indicator and map
 - A modern browser. Hardware (ESP32/ESP8266/Raspberry Pi) is optional — every lab can be completed with cURL/Python from any terminal.
 
 - Your device token from Lab 1 (`dev_...`).
+- Python 3 with the official client installed: `pip install "iotflow[mqtt]"` ([PyPI](https://pypi.org/project/iotflow/) · [source & examples](https://github.com/alfredang/iotplatform/tree/main/clients/python)).
 
 ## Step-by-step
 

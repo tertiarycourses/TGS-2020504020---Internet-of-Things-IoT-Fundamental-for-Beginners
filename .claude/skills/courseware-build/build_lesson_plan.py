@@ -32,7 +32,7 @@ SCHEDULE = {
     ("11:00","11:15",15,"break","Tea break"),
     ("11:15","13:00",105,"topic","Topic 1 (continued) — wireless communication technologies, IoT applications and use cases. Introduction to our IoT platform IoTFlow (iot.tertiaryinfotech.com): how it works — connect, visualise & control, automate with n8n"),
     ("13:00","14:00",60,"lunch","Lunch break"),
-    ("14:00","15:30",90,"lab","Topic 2 — Collect and Post Data to Cloud: cloud computing, IoT platforms, MQTT and REST API (concepts). Hands-on: "+lab_titles([1])),
+    ("14:00","15:30",90,"lab","Topic 2 — Collect and Post Data to Cloud: cloud computing, IoT platforms, MQTT and REST API, the IoTFlow Python client (pip install iotflow) (concepts). Hands-on: "+lab_titles([1])),
     ("15:30","15:45",15,"break","Tea break"),
     ("15:45","17:45",120,"lab","Hands-on: "+lab_titles([2])),
     ("17:45","18:30",45,"recap","Day 1 recap, Q&A and PM digital attendance"),
@@ -61,9 +61,12 @@ prodoc.add_cover_page(doc,"LESSON PLAN",C.TITLE,C.VERSION.lstrip("v"),
                       course_logo=None, course_code=C.COURSE_CODE)
 prodoc.add_version_control(doc,[
     ("12",("1 March 2025"),"Previous release — ThingSpeak/ESP8266/Node-RED based courseware.",C.TRAINER),
-    (C.VERSION.lstrip("v"),C.VERSION_DATE,
+    ("13","6 July 2026",
      "Revamped to the IoTFlow platform (iot.tertiaryinfotech.com): 6 labs covering device registration, "
      "MQTT/HTTP telemetry, virtual-pin remote control, dashboards and n8n + AI automation.",C.TRAINER),
+    (C.VERSION.lstrip("v"),C.VERSION_DATE,
+     "Labs updated to the official IoTFlow Python client (pip install iotflow): HTTP send/virtual_write, "
+     "the telemetry_upload.py MQTT example, and @on_command control handlers.",C.TRAINER),
 ])
 prodoc.add_toc(doc)
 
@@ -75,7 +78,8 @@ info=[("Course Title",C.TITLE),("WSQ Course Reference",C.COURSE_CODE),
       ("Training Provider",C.ORG+"  ("+C.UEN.replace('UEN: ','UEN ')+")"),
       ("Duration","2 days · 8 training hours per day (16 hours)"),
       ("Daily Timing","9:30 am – 6:30 pm (1-hour lunch; tea breaks within training time)"),
-      ("Mode",f"Instructor-led, hands-on labs on the {C.PLATFORM} IoT platform ({C.PLATFORM_URL}) and n8n"),
+      ("Mode",f"Instructor-led, hands-on labs on the {C.PLATFORM} IoT platform ({C.PLATFORM_URL}) "
+              "using the official Python client (pip install iotflow) and n8n"),
       ("Trainer",C.TRAINER),
       ("Course Page",C.COURSE_URL)]
 t=doc.add_table(rows=0,cols=2); t.style="Table Grid"

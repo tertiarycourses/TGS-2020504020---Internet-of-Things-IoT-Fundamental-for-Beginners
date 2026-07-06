@@ -13,7 +13,7 @@ The learner pushes sensor values to the IoTFlow telemetry API three ways — cUR
 
 Live temperature & humidity telemetry streaming into IoTFlow from terminal, Python and ESP32
 
-*Uses: Telemetry REST API, Python iotflow client, ESP32/ESP8266 Arduino library, MQTT broker (port 1883).*
+*Uses: Telemetry REST API, Python client (pip install iotflow), ESP32/ESP8266 Arduino library, MQTT broker (port 1883).*
 
 ![Platform walkthrough](../courseware/assets/lab-02-send-reading.png)
 
@@ -23,6 +23,7 @@ Live temperature & humidity telemetry streaming into IoTFlow from terminal, Pyth
 - A modern browser. Hardware (ESP32/ESP8266/Raspberry Pi) is optional — every lab can be completed with cURL/Python from any terminal.
 
 - Your device token from Lab 1 (`dev_...`).
+- Python 3 with the official client installed: `pip install "iotflow[mqtt]"` ([PyPI](https://pypi.org/project/iotflow/) · [source & examples](https://github.com/alfredang/iotplatform/tree/main/clients/python)).
 
 ## Step-by-step
 
@@ -39,20 +40,47 @@ curl -X POST https://iot.tertiaryinfotech.com/api/telemetry \
 
 ### Step 3 — Open the Dashboard — the reading appears under Latest Telemetry within seconds (widgets auto-refresh every 5 s).
 
-### Step 4 — Send readings from Python using the lightweight iotflow.py client (plain HTTP — no pip install needed).
+### Step 4 — Install the official IoTFlow Python client from PyPI (https://pypi.org/project/iotflow/).
 
 ```
-client = IoTFlow(host, device_token, device_id)
-client.send(temperature=23.1, humidity=58)
+pip install "iotflow[mqtt]"      # with real-time MQTT (paho-mqtt)
+pip install iotflow               # HTTP only — zero dependencies
 ```
 
-### Step 5 — For real hardware: flash the ESP32/ESP8266 Arduino sketch — set your Wi-Fi SSID/password, the broker host (port 1883) and your device credentials.
+### Step 5 — Send readings from Python over HTTP — several metrics at once with send(), or one at a time with virtual_write().
+
+```
+from iotflow import IoTFlow
+
+iot = IoTFlow("https://iot.tertiaryinfotech.com", "dev_XXXXXXXXXXXX", "living-room-sensor")
+iot.send(temperature=22.5, humidity=60)      # several metrics at once
+iot.virtual_write("temperature", 22.5)       # or one at a time
+```
+
+### Step 6 — Stream continuously over MQTT with the telemetry_upload.py example — download it, fill in your broker host, device id and device token, then run it.
+
+```
+curl -O https://raw.githubusercontent.com/alfredang/iotplatform/main/clients/python/examples/telemetry_upload.py
+# edit: MQTT_BROKER = "iot.tertiaryinfotech.com", DEVICE_ID, DEVICE_TOKEN
+python telemetry_upload.py
+```
+
+### Step 7 — Study the loop inside telemetry_upload.py — connect() runs MQTT in the background and mqtt_publish() sends a reading every 10 seconds.
+
+```
+iot = IoTFlow(token=DEVICE_TOKEN, device_id=DEVICE_ID,
+              mqtt_host=MQTT_BROKER, mqtt_port=MQTT_PORT)
+iot.connect()                    # MQTT runs in the background
+while True:
+    iot.mqtt_publish(temperature=temperature, humidity=humidity, voltage=3.7)
+    time.sleep(PUBLISH_INTERVAL_S)
+```
+
+### Step 8 — Hardware alternative: flash the ESP8266_Telemetry_Upload Arduino sketch — the Arduino library speaks the same protocol as the Python client. Confirm the values update live on the dashboard.
 
 ```
 IoTFlow.virtualWrite("temperature", t);   // metric name binds to dashboard widgets
 ```
-
-### Step 6 — Let the device publish continuously and confirm the values update live on the dashboard.
 
 ## Test it
 

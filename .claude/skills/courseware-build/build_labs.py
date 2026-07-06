@@ -57,6 +57,8 @@ for t in C.TOPICS:
               ""]
         if a["num"] > 1:
             md.append(f"- Your device token from Lab 1 (`dev_...`).")
+            md.append(f"- Python 3 with the official client installed: `pip install \"iotflow[mqtt]\"` "
+                      f"([PyPI]({C.PYPI_URL}) · [source & examples]({C.PY_CLIENT_URL})).")
             md.append("")
         md += ["## Step-by-step", ""]
         for i, (instr, cmd) in enumerate(a["steps"], 1):
