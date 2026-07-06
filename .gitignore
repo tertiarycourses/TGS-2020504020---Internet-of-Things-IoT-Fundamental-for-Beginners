@@ -1,0 +1,15 @@
+# WSQ assessment materials (confidential — never pushed)
+/assessment/
+/assessment\ /
+
+# Legacy trainer source deck (kept locally only)
+/references/
+
+# Intermediate extraction output (curated copies live in courseware/assets/)
+/assets/
+
+# OS / tooling
+.DS_Store
+__pycache__/
+*.pyc
+.playwright-mcp/
