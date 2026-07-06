@@ -38,8 +38,11 @@ Learners connect devices and sensors to the cloud, control them remotely, and au
 ```
 ├── courseware/
 │   ├── IoT-Fundamental-for-Beginners-v13.pptx   # Slide deck (146 slides)
+│   ├── IoT-Fundamental-for-Beginners-v13.pdf    # Slide deck (PDF)
 │   ├── LP-IoT-Fundamental-for-Beginners.docx    # Lesson Plan (2-day schedule)
+│   ├── LP-IoT-Fundamental-for-Beginners.pdf     # Lesson Plan (PDF)
 │   ├── LG-IoT-Fundamental-for-Beginners.docx    # Learner Guide (with screenshots)
+│   ├── LG-IoT-Fundamental-for-Beginners.pdf     # Learner Guide (PDF)
 │   └── assets/                                  # Diagrams + platform screenshots
 ├── LEARNER-GUIDE.md                             # Markdown mirror of the Learner Guide
 ├── labs/                                        # 6 hands-on labs (start at labs/README.md)
