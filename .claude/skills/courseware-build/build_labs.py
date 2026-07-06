@@ -7,7 +7,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import course_data as C
 from data_labs import LABS
 
-REPO = os.path.dirname(HERE)
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))  # .claude/skills/courseware-build -> repo root
 OUT = os.path.join(REPO, "labs")
 os.makedirs(OUT, exist_ok=True)
 

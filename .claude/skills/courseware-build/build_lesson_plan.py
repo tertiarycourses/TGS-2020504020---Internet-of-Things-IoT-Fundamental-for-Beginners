@@ -15,7 +15,8 @@ HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,HERE)
 import course_data as C
 from data_labs import LABS
 import prodoc
-REPO=os.path.dirname(HERE); ASSETS=os.path.join(REPO,"courseware","assets")
+REPO=os.path.dirname(os.path.dirname(os.path.dirname(HERE)))  # skill dir -> repo root
+ASSETS=os.path.join(REPO,"courseware","assets")
 
 BRAND=RGBColor(0x1F,0x6F,0xEB); GREY=RGBColor(0x55,0x5B,0x66)
 HEADER_FILL="1F6FEB"; TOPIC_FILL="E8F0FE"; BREAK_FILL="FFF4E5"; LUNCH_FILL="FDE9D9"; ASSESS_FILL="E8F7EE"

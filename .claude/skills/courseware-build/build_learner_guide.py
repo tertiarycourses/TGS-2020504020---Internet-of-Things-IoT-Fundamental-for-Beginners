@@ -18,7 +18,8 @@ HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,HERE)
 import course_data as C
 from data_labs import LABS
 import prodoc
-REPO=os.path.dirname(HERE); ASSETS=os.path.join(REPO,"courseware","assets")
+REPO=os.path.dirname(os.path.dirname(os.path.dirname(HERE)))  # skill dir -> repo root
+ASSETS=os.path.join(REPO,"courseware","assets")
 
 def lab_slug(a):
     s=re.sub(r"[^a-z0-9]+","-",a["title"].lower()).strip("-")
