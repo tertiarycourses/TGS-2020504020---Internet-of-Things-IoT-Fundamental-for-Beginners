@@ -16,3 +16,4 @@ __pycache__/
 
 # Assessment builder embeds this course's questions + model answers (confidential — never pushed)
 /.claude/skills/wsq-assessment/build_assessment.py
+/.claude/skills/wsq-assessment/build_wsq_assessment.py
